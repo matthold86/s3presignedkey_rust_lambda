@@ -225,29 +225,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws-sdk-dynamodb"
-version = "1.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc684cff4b0b7b156ad61aedd1766167af2aa0c4f65d6e8a04e75e726539c322"
-dependencies = [
- "aws-credential-types 1.1.8",
- "aws-runtime 1.1.8",
- "aws-smithy-async 1.1.8",
- "aws-smithy-http 0.60.7",
- "aws-smithy-json 0.60.7",
- "aws-smithy-runtime 1.1.8",
- "aws-smithy-runtime-api 1.2.0",
- "aws-smithy-types 1.1.8",
- "aws-types 1.1.8",
- "bytes",
- "fastrand",
- "http 0.2.12",
- "once_cell",
- "regex-lite",
- "tracing",
-]
-
-[[package]]
 name = "aws-sdk-sso"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -585,7 +562,6 @@ dependencies = [
  "base64-simd",
  "bytes",
  "bytes-utils",
- "futures-core",
  "http 0.2.12",
  "http-body 0.4.6",
  "itoa",
@@ -595,8 +571,6 @@ dependencies = [
  "ryu",
  "serde",
  "time",
- "tokio",
- "tokio-util",
 ]
 
 [[package]]
@@ -1964,7 +1938,6 @@ name = "s3presignkeyrust"
 version = "0.1.0"
 dependencies = [
  "aws-config",
- "aws-sdk-dynamodb 1.18.0",
  "chrono",
  "http 1.1.0",
  "lambda_http",
@@ -2061,7 +2034,7 @@ version = "4.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b652e4dd5549c24a4ec779981278cccae2f85b4d5649441c745d58866e20283"
 dependencies = [
- "aws-sdk-dynamodb 0.33.0",
+ "aws-sdk-dynamodb",
  "base64 0.21.7",
  "serde",
 ]

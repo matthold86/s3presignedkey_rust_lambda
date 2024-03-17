@@ -2,17 +2,18 @@ use lambda_http::{run, service_fn, Request, Response};
 use serde_json::json;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
-//use tracing::info;
-//use chrono::Utc;
 
 extern crate rusoto_core;
 extern crate rusoto_s3;
+extern crate rusoto_xray;
 
 use rusoto_core::Region;
+use rusoto_core::request::HttpClient;
 use rusoto_s3::{PutObjectRequest};
 use rusoto_s3::util::{PreSignedRequest, PreSignedRequestOption};
-use rusoto_credential::ChainProvider;
-use rusoto_credential::ProvideAwsCredentials;
+use rusoto_credential::{ChainProvider, ProvideAwsCredentials, StaticProvider};
+use rusoto_xray::{XRayRecorder, PutTraceSegmentsRequest, XRay};
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Payload {
@@ -37,12 +38,6 @@ async fn generate_presigned_url(bucket_name: &str, object_name: &str, expiration
     let options = PreSignedRequestOption {
         expires_in: std::time::Duration::from_secs(expiration),
     };
-
-    // let request = PreSignedRequest::default();
-    // request.set_bucket(bucket_name);
-    // request.set_key(object_name);
-    // request.set_method("PUT");
-    // request.set_expires(expiration);
 
     let req = PutObjectRequest {
         bucket: bucket_name.to_owned(),
@@ -109,16 +104,27 @@ async fn main() -> Result<(),  Box<dyn Error>> {
     // required to enable CloudWatch error logging by the runtime
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
         .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
         .without_time()
         .init();
 
-    let response = run(service_fn(|event: Request| async {
-        lambda_handler(event).await
-    }))
-    .await;
+    // Initialize the X-Ray recorder
+    let recorder = XRayRecorder::default();
+
+    // Initialize the X-Ray client
+    let client = HttpClient::new().unwrap();
+    let provider = StaticProvider::new(access_key_id.to_string(), secret_access_key.to_string(), None, None);
+    let xray_client = XRayClient::new_with_client(client, provider, region);
+
+    let response = recorder.record_trace(|recorder| {
+        lambda_handler(event, &recorder, &xray_client).await
+    }).await?;
+
+    // Submit trace segments to X-Ray
+    let trace_segments = recorder.trace_segments();
+    let trace_segment_docs = trace_segments.iter().map(|segment| segment.document.clone()).collect();
+    let put_trace_segments_req = PutTraceSegmentsRequest { trace_segment_documents: trace_segment_docs };
+    xray_client.put_trace_segments(put_trace_segments_req).await?;
 
     println!("Response: {:?}", response);
     
