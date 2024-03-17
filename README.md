@@ -1,5 +1,5 @@
 # s3presignedkey_rust_lambda
-This cargo lambda function is an extension of the [ImageStorage]('https://github.com/matthold86/ImageStorage') repository and contains the Rust lambda function for retrieving a presigned key from an AWS S3 bucket. This lambda function is part of a larger image processing pipeline that allows a user to upload and retrieve an image from an S3 bucket via a web application interface.
+This cargo lambda function is an extension of the [ImageStorage](https://github.com/matthold86/ImageStorage) repository and contains the Rust lambda function for retrieving a presigned key from an AWS S3 bucket. This lambda function is part of a larger image processing pipeline that allows a user to upload and retrieve an image from an S3 bucket via a web application interface.
 
 ### AWS X-Ray
 
